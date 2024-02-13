@@ -8,8 +8,9 @@
 
 //----------------------------------------------------------
 
+// This code is for Tony/CommonRail's board, but it can also be used with the AIO
 // uncomment the following line if you're using the All-In-One-Board
-#define isAllInOneBoard
+//#define isAllInOneBoard
 
 //Tony / @Commonrail Version 29.01.2023
 //30.06.2022  - Ryan / @RGM Added JCB CAN engage message
