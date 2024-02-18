@@ -372,7 +372,53 @@ void VBus_Receive()
                     engageCAN = 1;
                     relayTime = ((millis() + 1000));
                 }
-            } 
+            }
+            else if (VBusReceiveData.id == 0x18EF1CFC)//Mccormick engage message
+            {
+                if ((VBusReceiveData.buf[0]) == 15 && (VBusReceiveData.buf[1]) == 96 && (VBusReceiveData.buf[3]) == 255)
+                {
+                    Time = millis();
+#ifdef isAllInOneBoard
+                    digitalWrite(AUTOSTEER_ACTIVE_LED, HIGH);
+                    digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+#else
+                    digitalWrite(engageLED, HIGH);
+#endif
+                    engageCAN = 1;
+                    relayTime = ((millis() + 1000));
+                }
+            }
+            else if (VBusReceiveData.id == 0x18EF1C00)//MF engage message
+            {
+                if ((VBusReceiveData.buf[0]) == 15 && (VBusReceiveData.buf[1]) == 96 && (VBusReceiveData.buf[2]) == 1)
+                {
+                    Time = millis();
+#ifdef isAllInOneBoard
+                    digitalWrite(AUTOSTEER_ACTIVE_LED, HIGH);
+                    digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+#else
+                    digitalWrite(engageLED, HIGH);
+#endif
+                    engageCAN = 1;
+                    relayTime = ((millis() + 1000));
+                }
+            }
+            else if (VBusReceiveData.id == 0x18FF8306)//Mccormick Joystick
+            {
+                if (bitRead(VBusReceiveData.buf[5], 3) == 1)
+                {
+                    Time = millis();
+#ifdef isAllInOneBoard
+                    digitalWrite(AUTOSTEER_ACTIVE_LED, HIGH);
+                    digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+#else
+                    digitalWrite(engageLED, HIGH);
+#endif
+                    engageCAN = 1;
+                    relayTime = ((millis() + 1000));
+                }
+            }
+
         }//End Brand == 1   
 
         if (Brand == 2)

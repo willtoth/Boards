@@ -20,6 +20,7 @@
 //29.01.2023  - Add WAS mapping option to fix wheel angle to turning radius conversion
 //            - Add Danfoss PVED-CL setup options (Claas mods mainly)
 //            - Add CaseIH/New Holland engage from CAN options
+//18-02-2024  - Add MCcormick & Massey Ferguson CAN-Engage Messages from Tony's code
 
 // GPS forwarding mode: (Serial Bynav etc)
 // - GPS to Serial3, Forward to AgIO via UDP
