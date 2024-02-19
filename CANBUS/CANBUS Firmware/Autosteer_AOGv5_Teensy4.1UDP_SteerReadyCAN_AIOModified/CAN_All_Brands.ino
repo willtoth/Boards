@@ -24,12 +24,15 @@ if (Brand == 0){
   V_Bus.setFIFOFilter(2, 0x1CFFE6D2, EXT);  //Claas Work Message (CEBIS Screen MR Models)
   }
 if (Brand == 1){
-  V_Bus.setFIFOFilter(0, 0x0CAC1C13, EXT);  //Valtra Curve Data & Valve State Message
-  V_Bus.setFIFOFilter(1, 0x18EF1C32, EXT);  //Valtra Engage Message
+    V_Bus.setFIFOFilter(0, 0x0CAC1C13, EXT);  //Valtra Curve Data & Valve State Message
+    V_Bus.setFIFOFilter(1, 0x18EF1C32, EXT);  //Valtra Engage Message
+    V_Bus.setFIFOFilter(2, 0x18EF1CFC, EXT);  //Mccormick Engage Message
+    V_Bus.setFIFOFilter(3, 0x18EF1C00, EXT);  //MF Engage Message
+    V_Bus.setFIFOFilter(4, 0x18FF8306, EXT);  //Mccormick Joystick
   }  
 if (Brand == 2){
-  V_Bus.setFIFOFilter(0, 0x0CACAA08, EXT);  //CaseIH Curve Data & Valve State Message
-  V_Bus.setFIFOUserFilter(1, 0x0CEFAA08, 0x0CEF08AA, 0x0000FF00, EXT);
+    V_Bus.setFIFOFilter(0, 0x0CACAA08, EXT);  //CaseIH Curve Data & Valve State Message
+    V_Bus.setFIFOFilter(1, 0x18FFBB03, EXT);  //CaseIH Engage Message
   }   
 if (Brand == 3){
   V_Bus.setFIFOFilter(0, 0x0CEF2CF0, EXT);  //Fendt Curve Data & Valve State Message
@@ -429,6 +432,23 @@ void VBus_Receive()
                 estCurve = ((VBusReceiveData.buf[1] << 8) + VBusReceiveData.buf[0]);  // CAN Buf[1]*256 + CAN Buf[0] = CAN Est Curve 
                 steeringValveReady = (VBusReceiveData.buf[2]); 
           } 
+
+          //**Engage Message**
+          if (VBusReceiveData.id == 0x18FFBB03)
+          {
+              if (bitRead(VBusReceiveData.buf[0], 2))
+              {
+                  Time = millis();
+#ifdef isAllInOneBoard
+                  digitalWrite(AUTOSTEER_ACTIVE_LED, HIGH);
+                  digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+#else
+                  digitalWrite(engageLED, HIGH);
+#endif
+                  engageCAN = 1;
+                  relayTime = ((millis() + 1000));
+              }
+          }
   
         }//End Brand == 2 
 

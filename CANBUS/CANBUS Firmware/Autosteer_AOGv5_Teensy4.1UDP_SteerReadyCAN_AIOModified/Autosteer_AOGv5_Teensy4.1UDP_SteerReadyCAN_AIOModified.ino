@@ -12,16 +12,6 @@
 // uncomment the following line if you're using the All-In-One-Board
 //#define isAllInOneBoard
 
-//Tony / @Commonrail Version 29.01.2023
-//30.06.2022  - Ryan / @RGM Added JCB CAN engage message
-//02.07.2022  - Added Claas headland from Ryan
-//            - Fix up pilot valve output for Ryan Claas wiring mod 
-//31.12.2022  - Add Panda mode & GPS options, set via serial monitor service tool
-//29.01.2023  - Add WAS mapping option to fix wheel angle to turning radius conversion
-//            - Add Danfoss PVED-CL setup options (Claas mods mainly)
-//            - Add CaseIH/New Holland engage from CAN options
-//18-02-2024  - Add MCcormick & Massey Ferguson CAN-Engage Messages from Tony's code
-
 // GPS forwarding mode: (Serial Bynav etc)
 // - GPS to Serial3, Forward to AgIO via UDP
 // - Forward Ntrip from AgIO (Port 2233) to Serial3
@@ -59,9 +49,9 @@
 //----------------------------------------------------------
 
 #ifdef isAllInOneBoard
-    String inoVersion = ("\r\nAgOpenGPS CANBUS Ver 02.07.2023 (AIO v4.1 PCB))");
+    String inoVersion = ("\r\nAgOpenGPS CANBUS Ver 19.02.2024 (AIO v4.1 PCB))");
 #else
-    String inoVersion = ("\r\nAgOpenGPS CANBUS Ver 02.07.2023 (CommonRail PCB)");
+    String inoVersion = ("\r\nAgOpenGPS CANBUS Ver 19.02.2024 (CommonRail PCB)");
 #endif
 
   ////////////////// User Settings /////////////////////////  
