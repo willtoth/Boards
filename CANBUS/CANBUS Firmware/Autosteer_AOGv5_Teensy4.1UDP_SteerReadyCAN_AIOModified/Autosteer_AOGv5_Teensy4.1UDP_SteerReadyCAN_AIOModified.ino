@@ -629,88 +629,66 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
       workSwitch = digitalRead(WORKSW_PIN);     // read work switch (PCB pin)
       if (workCAN == 1) workSwitch = 0;         // If CAN workswitch is on, set workSwitch ON
       
-      if (steerConfig.SteerSwitch == 1)         //steer switch on - off
-      {
-        steerSwitch = digitalRead(STEERSW_PIN); //read auto steer enable switch open = 0n closed = Off
-      }
-      else if(steerConfig.SteerButton == 1)     //steer Button momentary
-      {
+        //Engage steering via 1 PCB Button or 2 Tablet or 3 CANBUS
+        
+        // 1 PCB Button pressed?
         reading = digitalRead(STEERSW_PIN); 
 
-        //CAN
-        if (engageCAN == 1) reading = 0;              //CAN Engage is ON (Button is Pressed)
-              
-            if (reading == LOW && previous == HIGH) 
-            {
-                if (currentState == 1)
-                {
-                if (Brand == 3) steeringValveReady = 16;  //Fendt Valve Ready To Steer 
-                if (Brand == 5) steeringValveReady = 16;  //FendtOne Valve Ready To Steer 
-                currentState = 0;
-                steerSwitch = 0;
-                }
-                else
-                {
-                currentState = 1;
-                steerSwitch = 1;
-                }
-            }      
-            previous = reading;
-        
-           //--------CAN CutOut--------------------------
-           if (steeringValveReady != 20 && steeringValveReady != 16)
-           {            
-              steerSwitch = 1; // reset values like it turned off
-              currentState = 1;
-              previous = HIGH;
-           }
-      }
-      
-        else     // No steer switch and no steer button 
+        // 2 Has tablet button been pressed?
+        if (previousStatus != guidanceStatus)
         {
-        
-            if (steeringValveReady != 20 && steeringValveReady != 16)
-            {            
-                steerSwitch = 1; // reset values like it turned off
-                currentState = 1;
-                previous = HIGH;
-            }
-      
-            if (previousStatus != guidanceStatus) 
+            if (guidanceStatus == 1)    //Must have changed Off >> On
             {
-                if (guidanceStatus == 1 && steerSwitch == 1 && previousStatus == 0)
-                {
-                if (Brand == 3) steeringValveReady = 16;  //Fendt Valve Ready To Steer 
-                if (Brand == 5) steeringValveReady = 16;  //FendtOne Valve Ready To Steer  
-                steerSwitch = 0;
-                }
-                else
-                {
+                Time = millis();
+#ifdef isAllInOneBoard
+                digitalWrite(AUTOSTEER_ACTIVE_LED, HIGH);
+                digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+#else
+                digitalWrite(engageLED, HIGH);
+#endif
+                engageCAN = 1;
+                relayTime = ((millis() + 1000));
+
+                currentState = 1;
+            }
+            else
+            {
+                currentState = 1;
                 steerSwitch = 1;
-                }
-            }      
+            }
+
             previousStatus = guidanceStatus;
         }
-      
-          if (steerConfig.ShaftEncoder && pulseCount >= steerConfig.PulseCountMax) 
-          {
+
+        // 3 Has CANBUS button been pressed?
+        if (engageCAN == 1) reading = 0;              //CAN Engage is ON (Button is Pressed)
+        
+        // Arduino software switch code
+        if (reading == LOW && previous == HIGH) 
+        {
+            if (currentState == 1)
+            {
+            if (Brand == 3) steeringValveReady = 16;  //Fendt Valve Ready To Steer 
+            if (Brand == 5) steeringValveReady = 16;  //FendtOne Valve Ready To Steer 
+            currentState = 0;
+            steerSwitch = 0;
+            }
+            else
+            {
+            currentState = 1;
+            steerSwitch = 1;
+            }
+        }      
+        previous = reading;
+        
+        //--------CAN CutOut--------------------------
+        if (steeringValveReady != 20 && steeringValveReady != 16)
+        {            
             steerSwitch = 1; // reset values like it turned off
             currentState = 1;
-            previous = 0;
-          }     
+            previous = HIGH;
+        }     
 
-          // Current sensor?
-          if (steerConfig.CurrentSensor)
-          {
- 
-          }
-
-          // Pressure sensor?
-          if (steerConfig.PressureSensor)
-          {
-
-          }
-      
           remoteSwitch = digitalRead(REMOTE_PIN); //read auto steer enable switch open = 0n closed = Off
           switchByte = 0;
           switchByte |= (remoteSwitch << 2);  //put remote in bit 2
