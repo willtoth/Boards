@@ -10,7 +10,7 @@
 
 // This code is for Tony/CommonRail's board, but it can also be used with the AIO
 // uncomment the following line if you're using the All-In-One-Board
-//#define isAllInOneBoard
+#define isAllInOneBoard
 
 // GPS forwarding mode: (Serial Bynav etc)
 // - GPS to Serial3, Forward to AgIO via UDP
