@@ -91,7 +91,7 @@ Port = 5126<br>
         </tr>
         <tr>
             <td align=center>From Autosteer 2</td>
-            <td align=center>7F</td>
+            <td align=center>7E</td>
             <td align=center>127</td>
             <td align=center>FA</td>
             <td align=center>250</td>
