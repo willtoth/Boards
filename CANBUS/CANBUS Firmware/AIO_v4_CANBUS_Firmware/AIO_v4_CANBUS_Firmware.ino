@@ -8,7 +8,9 @@
 
 //----------------------------------------------------------
 
-//Tony / @Commonrail Version 18.02.2024
+// This code is for Tony/CommonRail's board, but it can also be used with the AIO
+// uncomment the following line if you're using the All-In-One-Board
+#define isAllInOneBoard
 
 // GPS forwarding mode: (Serial Bynav etc)
 // - GPS to Serial3, Forward to AgIO via UDP
@@ -45,7 +47,11 @@
 
 //----------------------------------------------------------
 
-String inoVersion = ("\r\nAgOpenGPS Tony UDP CANBUS Ver 04.05.2024");
+#ifdef isAllInOneBoard
+String inoVersion = ("\r\nAgOpenGPS CANBUS Ver 04.05.2024 (AIO v4 PCB))");
+#else
+String inoVersion = ("\r\nAgOpenGPS CANBUS Ver 04.05.2024 (CommonRail PCB)");
+#endif
 
   ////////////////// User Settings /////////////////////////  
 
@@ -77,9 +83,15 @@ String inoVersion = ("\r\nAgOpenGPS Tony UDP CANBUS Ver 04.05.2024");
   #define PWM2_RPWM  9 //D9
 
   //--------------------------- Switch Input Pins ------------------------
-  #define STEERSW_PIN 6 //PD6
-  #define WORKSW_PIN 7  //PD7
-  #define REMOTE_PIN 8  //PB0
+    #ifdef isAllInOneBoard
+    #define STEERSW_PIN 32
+    #define WORKSW_PIN 34
+    #define REMOTE_PIN 37
+    #else
+    #define STEERSW_PIN 6 //PD6
+    #define WORKSW_PIN 7  //PD7
+    #define REMOTE_PIN 8  //PB0
+    #endif
 
   #define CONST_180_DIVIDED_BY_PI 57.2957795130823
   #define RAD_TO_DEG_X_10 572.95779513082320876798154814105
@@ -104,7 +116,7 @@ elapsedMillis tempChecker;
     struct ConfigIP {
         uint8_t ipOne = 192;
         uint8_t ipTwo = 168;
-        uint8_t ipThree = 1;
+        uint8_t ipThree = 5;
     };  ConfigIP networkAddress;   //3 bytes
   
   // Module IP Address / Port
@@ -136,8 +148,17 @@ FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_256> K_Bus;    //Tractor / Control Bus
 FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_256> ISO_Bus;  //ISO Bus
 FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_256> V_Bus;    //Steering Valve Bus
 
+#ifdef isAllInOneBoard
+#define Power_on_LED 5            //Red
+#define Ethernet_Active_LED 6     //Green
+#define GPSRED_LED 9              //Red (Flashing = No RTK)
+#define GPSGREEN_LED 10           //Green (ON = RTK)
+#define AUTOSTEER_STANDBY_LED 11  //Red
+#define AUTOSTEER_ACTIVE_LED 12   //Green
+#else
 #define ledPin 5        //Option for LED, CAN Valve Ready To Steer.
 #define engageLED 24    //Option for LED, to see if Engage message is recived.
+#endif
 
 uint8_t Brand = 1;              //Variable to set brand via serial monitor.
 uint8_t gpsMode = 1;            //Variable to set GPS mode via serial monitor.
@@ -204,6 +225,16 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
   float roll = 0;
   float pitch = 0;
   float yaw = 0;
+
+  //Dual data
+  double baseline = 0;
+  double rollDual = 0;
+  double relPosD = 0;
+  double heading = 0;
+
+  bool useDual = false;
+  bool dualReadyGGA = false;
+  bool dualReadyRelPos = false;
 
   //GPS Data
   bool sendGPStoISOBUS = false;
@@ -348,7 +379,16 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
     Serial.print("CPU speed set to: ");
     Serial.println(F_CPU_ACTUAL);
 
-   //keep pulled high and drag low to activate, noise free safe   
+   //keep pulled high and drag low to activate, noise free safe  
+    #ifdef isAllInOneBoard
+        pinMode(Power_on_LED, OUTPUT);
+        digitalWrite(Power_on_LED, HIGH);
+        pinMode(Ethernet_Active_LED, OUTPUT);
+        pinMode(GPSRED_LED, OUTPUT);
+        pinMode(GPSGREEN_LED, OUTPUT);
+        pinMode(AUTOSTEER_STANDBY_LED, OUTPUT);
+        pinMode(AUTOSTEER_ACTIVE_LED, OUTPUT);
+    #endif 
     pinMode(WORKSW_PIN, INPUT_PULLUP); 
     pinMode(STEERSW_PIN, INPUT_PULLUP); 
     pinMode(REMOTE_PIN, INPUT_PULLUP); 
@@ -493,11 +533,16 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
 
     //----Teensy 4.1 CANBus--Start---------------------
 
-      pinMode(ledPin, OUTPUT);    //CAN Valve Ready LED
-      digitalWrite(ledPin, LOW);
+    #ifdef isAllInOneBoard
+          pinMode(AUTOSTEER_STANDBY_LED, LOW);
+          pinMode(AUTOSTEER_ACTIVE_LED, LOW);
+    #else
+          pinMode(ledPin, OUTPUT);    //CAN Valve Ready LED
+          digitalWrite(ledPin, LOW);
 
-      pinMode(engageLED,OUTPUT);  //CAN engage LED
-      digitalWrite(engageLED,LOW);
+          pinMode(engageLED, OUTPUT);  //CAN engage LED
+          digitalWrite(engageLED, LOW);
+    #endif
 
       Serial.println("\r\nStarting CAN-Bus Ports");
       if (Brand == 0) Serial.println("Brand = Claas (Set Via Service Tool)");
@@ -515,8 +560,8 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
       Serial.println("\r\nGPS Mode:");
       if (gpsMode == 1) Serial.println("GPS Forwarding @ 115200 (Set Via Service Tool)");
       else if (gpsMode == 2) Serial.println("GPS Forwarding @ 460800 (Set Via Service Tool)");
-      else if (gpsMode == 3) Serial.println("Panda Mode @ 115200 (Set Via Service Tool)");
-      else if (gpsMode == 4) Serial.println("Panda Mode @ 460800 (Set Via Service Tool)");
+      else if (gpsMode == 3) Serial.println("Panda/Dual Mode @ 115200 (Set Via Service Tool)");
+      else if (gpsMode == 4) Serial.println("Panda/Dual Mode @ 460800 (Set Via Service Tool)");
       else Serial.println("No GPS mode selected - Set Via Service Tool");
 
       delay (3000);
@@ -559,16 +604,39 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
           //If connection lost to AgOpenGPS, the watchdog will count up and turn off steering
           if (watchdogTimer++ > 250) watchdogTimer = WATCHDOG_FORCE_VALUE;
       
+          #ifdef isAllInOneBoard
+            if (Ethernet.linkStatus() == LinkON)
+            {
+                digitalWrite(Power_on_LED, LOW);
+                digitalWrite(Ethernet_Active_LED, HIGH);
+            }
+            else
+            {
+                digitalWrite(Ethernet_Active_LED, LOW);
+                digitalWrite(Power_on_LED, HIGH);
+            }
+          #endif
+
           //read all the switches
 
           //CANBus     
-          if (steeringValveReady == 20 || steeringValveReady == 16) 
+          if (steeringValveReady == 20 || steeringValveReady == 16)
           {
-            digitalWrite(ledPin, HIGH);
-          } 
-          else 
+            #ifdef isAllInOneBoard
+                   digitalWrite(AUTOSTEER_STANDBY_LED, HIGH);
+                   digitalWrite(AUTOSTEER_ACTIVE_LED, LOW);
+            #else
+                   digitalWrite(ledPin, HIGH);
+            #endif
+          }
+          else
           {
-            digitalWrite(ledPin, LOW);
+            #ifdef isAllInOneBoard
+                   digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+                   digitalWrite(AUTOSTEER_ACTIVE_LED, LOW);
+            #else
+                   digitalWrite(ledPin, LOW);
+            #endif
           }
   
           workSwitch = digitalRead(WORKSW_PIN);     // read work switch (PCB pin)
@@ -585,7 +653,12 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
               if (guidanceStatus == 1)    //Must have changed Off >> On
               {
                   Time = millis();
-                  digitalWrite(engageLED, HIGH);
+                  #ifdef isAllInOneBoard
+                         digitalWrite(AUTOSTEER_ACTIVE_LED, HIGH);
+                         digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+                  #else
+                         digitalWrite(engageLED, HIGH);
+                  #endif
 
                   engageCAN = 1;
                   relayTime = ((millis() + 1000));
@@ -724,9 +797,15 @@ boolean intendToSteer = 0;        //Do We Intend to Steer?
       ISO_Receive();
       K_Receive();
 
-    if ((millis()) > relayTime){
-    digitalWrite(engageLED,LOW);
-    engageCAN = 0;
+    if ((millis()) > relayTime)
+    {
+      #ifdef isAllInOneBoard
+             digitalWrite(AUTOSTEER_STANDBY_LED, HIGH);
+             digitalWrite(AUTOSTEER_ACTIVE_LED, LOW);
+      #else
+             digitalWrite(engageLED, LOW);
+      #endif
+      engageCAN = 0;
     }
 
     //Service Tool
@@ -812,7 +891,7 @@ void udpSteerRecv(int sizeToRead)
       //Bit 8,9    set point steer angle * 100 is sent
       steerAngleSetPoint = ((float)(udpData[8] | ((int8_t)udpData[9]) << 8))*0.01; //high low bytes
       
-      if (Brand == 8)
+      if (Brand == 8 || Brand == 9)
       {
           if (reverse_MT) steerAngleSetPoint *= -1.00;
       }
