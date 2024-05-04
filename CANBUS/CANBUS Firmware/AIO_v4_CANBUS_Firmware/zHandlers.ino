@@ -51,7 +51,16 @@ void GGA_Handler() //Rec'd GGA
 
     // fix quality
     parser.getArg(5, fixQuality);
-
+#ifdef isAllInOneBoard
+    if (*fixQuality == '4') {
+        digitalWrite(GPSRED_LED, LOW);
+        digitalWrite(GPSGREEN_LED, HIGH);
+    }
+    else {
+        digitalWrite(GPSGREEN_LED, LOW);
+        digitalWrite(GPSRED_LED, HIGH);
+    }
+#endif
     tempString = fixQuality;
     fixTypeGGA = tempString.toInt();
 
@@ -85,7 +94,20 @@ void GGA_Handler() //Rec'd GGA
     bnoTimer = 0;
     bnoTrigger = true;
 
-    if (useBNO08x)
+    if (useDual)
+    {
+        if (dualReadyRelPos)
+        {
+            BuildNmea();
+            dualReadyRelPos = false;
+        }
+        else
+        {
+            dualReadyGGA = true;
+        }
+    }
+
+    else if (useBNO08x)
     {
        imuHandler();          //Get IMU data ready
        BuildNmea();           //Build & send data GPS data to AgIO
@@ -218,7 +240,13 @@ void BuildNmea(void)
 {
     strcpy(nmea, "");
 
-    strcat(nmea, "$PANDA,");
+    if (useDual)
+    {
+        strcat(nmea, "$PAOGI,");
+        dtostrf(rollDual, 4, 2, imuRoll);
+        dtostrf(heading, 4, 2, imuHeading);
+    }
+    else strcat(nmea, "$PANDA,");
 
     strcat(nmea, fixTime);
     strcat(nmea, ",");

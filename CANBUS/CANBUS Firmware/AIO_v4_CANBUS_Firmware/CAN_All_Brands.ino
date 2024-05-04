@@ -340,30 +340,24 @@ void VBus_Receive()
           {
             if ((VBusReceiveData.buf[1])== 0 && (VBusReceiveData.buf[2])== 0)   //Ryan Stage5 Models?
             {
-                engageCAN = bitRead(VBusReceiveData.buf[0],2);
-                Time = millis();
-                digitalWrite(engageLED,HIGH); 
-                relayTime = ((millis() + 1000));
+                CAN_Engage();
+                engageCAN = bitRead(VBusReceiveData.buf[0], 2);
                 //*****Turn saftey valve ON**********
                 if (engageCAN == 1) digitalWrite(PWM2_RPWM, 1);       
             }
 
             else if ((VBusReceiveData.buf[0]) == 39 && (VBusReceiveData.buf[2]) == 241)   //Ryan MR Models?
             {
-              engageCAN = bitRead(VBusReceiveData.buf[1],0);
-              Time = millis();
-              digitalWrite(engageLED,HIGH); 
-              relayTime = ((millis() + 1000));
+              CAN_Engage();
+              engageCAN = bitRead(VBusReceiveData.buf[1], 0);
               //*****Turn saftey valve ON**********
               if (engageCAN == 1) digitalWrite(PWM2_RPWM, 1);       
             }
   
             else if ((VBusReceiveData.buf[1])== 0 && (VBusReceiveData.buf[2])== 125) //Tony Non MR Models? Ryan Mod to bit read engage bit
             {
-               engageCAN = bitRead(VBusReceiveData.buf[0],2);
-               Time = millis();
-               digitalWrite(engageLED,HIGH); 
-               relayTime = ((millis() + 1000));
+               CAN_Engage();
+               engageCAN = bitRead(VBusReceiveData.buf[0], 2);
                //*****Turn saftey valve ON**********
                if (engageCAN == 1) digitalWrite(PWM2_RPWM, 1);       
             }
@@ -393,10 +387,7 @@ void VBus_Receive()
             {
                 if ((VBusReceiveData.buf[0])== 15 && (VBusReceiveData.buf[1])== 96 && (VBusReceiveData.buf[2])== 1)
                 {   
-                    Time = millis();
-                    digitalWrite(engageLED,HIGH); 
-                    engageCAN = 1;
-                    relayTime = ((millis() + 1000));
+                    CAN_Engage();
                 }
             } 
 
@@ -404,30 +395,21 @@ void VBus_Receive()
             {
                 if ((VBusReceiveData.buf[0])== 15 && (VBusReceiveData.buf[1])== 96 && (VBusReceiveData.buf[3])== 255)
                 {   
-                    Time = millis();
-                    digitalWrite(engageLED,HIGH); 
-                    engageCAN = 1;
-                    relayTime = ((millis() + 1000));
+                    CAN_Engage();
                 }
             } 
             else if (VBusReceiveData.id == 0x18EF1C00)//MF engage message
             {
                 if ((VBusReceiveData.buf[0])== 15 && (VBusReceiveData.buf[1])== 96 && (VBusReceiveData.buf[2])== 1)
                 {   
-                    Time = millis();
-                    digitalWrite(engageLED,HIGH); 
-                    engageCAN = 1;
-                    relayTime = ((millis() + 1000));
+                    CAN_Engage();
                 }
             } 
             else if (VBusReceiveData.id == 0x18FF8306)//Mccormick Joystick
             {
                 if (bitRead(VBusReceiveData.buf[5], 3) == 1)
                 {
-                    Time = millis();
-                    digitalWrite(engageLED, HIGH);
-                    engageCAN = 1;
-                    relayTime = ((millis() + 1000));
+                    CAN_Engage();
                 }
             }
             
@@ -447,10 +429,7 @@ void VBus_Receive()
           {
               if (bitRead(VBusReceiveData.buf[0], 2))
               {
-                  Time = millis();
-                  digitalWrite(engageLED, HIGH);
-                  engageCAN = 1;
-                  relayTime = ((millis() + 1000));
+                  CAN_Engage();
               }
           }
   
@@ -484,10 +463,7 @@ void VBus_Receive()
             {
                 if ((VBusReceiveData.buf[0])== 15 && (VBusReceiveData.buf[1])== 96 && (VBusReceiveData.buf[2])== 1)
                 {
-                    Time = millis();
-                    digitalWrite(engageLED,HIGH); 
-                    engageCAN = 1;
-                    relayTime = ((millis() + 1000));
+                    CAN_Engage();
                 }
             }    
    
@@ -521,10 +497,7 @@ void VBus_Receive()
           {
               if ((VBusReceiveData.buf[0]) == 15 && (VBusReceiveData.buf[1]) == 96 && (VBusReceiveData.buf[2]) == 1)
               {
-                  Time = millis();
-                  digitalWrite(engageLED, HIGH);
-                  engageCAN = 1;
-                  relayTime = ((millis() + 1000));
+                  CAN_Engage();
               }
           }
 
@@ -574,10 +547,9 @@ void VBus_Receive()
 
                 if ((VBusReceiveData.buf[0]) == 0x0F && (VBusReceiveData.buf[1]) == 0x60)   //MT Engage
                 {
-                    if (VBusReceiveData.buf[2] == 0x01) {
-                        digitalWrite(engageLED, HIGH);
-                        engageCAN = 1;
-                        relayTime = ((millis() + 1000));
+                    if (VBusReceiveData.buf[2] == 0x01) 
+                    {
+                        CAN_Engage();
                     }
                 }
 
@@ -615,10 +587,9 @@ void VBus_Receive()
 
                 if ((VBusReceiveData.buf[0]) == 0x0F && (VBusReceiveData.buf[1]) == 0x60)   //MT Engage
                 {
-                    if (VBusReceiveData.buf[2] == 0x01) {
-                        digitalWrite(engageLED, HIGH);
-                        engageCAN = 1;
-                        relayTime = ((millis() + 1000));
+                    if (VBusReceiveData.buf[2] == 0x01) 
+                    {
+                        CAN_Engage();
                     }
                 }
 
@@ -677,9 +648,7 @@ void ISO_Receive()
           if (ISOBusReceiveData.id == 0x18EF2CF0)   //**Fendt Engage Message**  
           {
             if ((ISOBusReceiveData.buf[0])== 0x0F && (ISOBusReceiveData.buf[1])== 0x60 && (ISOBusReceiveData.buf[2])== 0x01){   
-              digitalWrite(engageLED,HIGH); 
-              engageCAN = 1;
-              relayTime = ((millis() + 1000));
+                CAN_Engage();
             }
           }
       }
@@ -731,10 +700,7 @@ void K_Receive()
       
           if (KBusReceiveData.buf[1]==0x88 && KBusReceiveData.buf[4]==0x80) // Fendt Auto Steer Go   
           {
-              Time = millis();
-              digitalWrite(engageLED,HIGH); 
-              engageCAN = 1;
-              relayTime = ((millis() + 1000));
+              CAN_Engage();
           }
         }                                                             
       }
@@ -745,10 +711,7 @@ void K_Receive()
           {
             if ((KBusReceiveData.buf[3])== 0xF6)
             {   
-              Time = millis();
-              digitalWrite(engageLED,HIGH); 
-              engageCAN = 1;
-              relayTime = ((millis() + 1000));
+                CAN_Engage();
             }
           }
       }
@@ -760,18 +723,12 @@ void K_Receive()
           {
             if ((KBusReceiveData.buf[0])== 130 && (KBusReceiveData.buf[1])== 1)
             {   
-              Time = millis();
-              digitalWrite(engageLED,HIGH); 
-              engageCAN = 1;
-              relayTime = ((millis() + 1000));
+                CAN_Engage();
             }
 
             if ((KBusReceiveData.buf[0])== 178 && (KBusReceiveData.buf[1])== 4)
             {   
-              Time = millis();
-              digitalWrite(engageLED,HIGH); 
-              engageCAN = 1;
-              relayTime = ((millis() + 1000));
+                CAN_Engage();
             }
           }
 
@@ -932,4 +889,19 @@ void canConfig(){
     config252.buf[6] = uint8_t(steerSettings.AckermanFix * 100);
     config252.buf[7] = 0;
     V_Bus.write(config252);
+}
+
+void CAN_Engage()
+{
+    Time = millis();
+
+#ifdef isAllInOneBoard
+    digitalWrite(AUTOSTEER_ACTIVE_LED, HIGH);
+    digitalWrite(AUTOSTEER_STANDBY_LED, LOW);
+#else
+    digitalWrite(engageLED, HIGH);
+#endif
+
+    engageCAN = 1;
+    relayTime = ((millis() + 1000));
 }
