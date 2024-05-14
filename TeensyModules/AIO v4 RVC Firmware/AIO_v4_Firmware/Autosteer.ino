@@ -285,49 +285,51 @@ void autosteerLoop()
     }
 
     //read all the switches
-    workSwitch = digitalRead(WORKSW_PIN);  // read work switch
-
+    workSwitch = digitalRead(WORKSW_PIN);       // read work switch
+/*
     if (steerConfig.SteerSwitch == 1)         //steer switch on - off
     {
       steerSwitch = digitalRead(STEERSW_PIN); //read auto steer enable switch open = 0n closed = Off
     }
-    else if (steerConfig.SteerButton == 1)    //steer Button momentary
+*/
+
+    //Engage steering via 1 PCB Button or 2 Tablet
+
+    // 1 PCB Button pressed?
+    reading = digitalRead(STEERSW_PIN);
+
+    // 2 Has tablet button been pressed?
+    if (guidanceStatusChanged)
     {
-      reading = digitalRead(STEERSW_PIN);
-      if (reading == LOW && previous == HIGH)
-      {
-        if (currentState == 1)
+        if (guidanceStatus == 1)    //Must have changed Off >> On
         {
-          currentState = 0;
-          steerSwitch = 0;
+            currentState = 0;
+            steerSwitch = 0;
         }
         else
         {
-          currentState = 1;
-          steerSwitch = 1;
+            currentState = 1;
+            steerSwitch = 1;
         }
-      }
-      previous = reading;
     }
-    else                                      // No steer switch and no steer button
+
+    // Arduino software button code
+    if (reading == LOW && previous == HIGH)
     {
-      // So set the correct value. When guidanceStatus = 1,
-      // it should be on because the button is pressed in the GUI
-      // But the guidancestatus should have set it off first
-      if (guidanceStatusChanged && guidanceStatus == 1 && steerSwitch == 1 && previous == 0)
-      {
-        steerSwitch = 0;
-        previous = 1;
-      }
-
-      // This will set steerswitch off and make the above check wait until the guidanceStatus has gone to 0
-      if (guidanceStatusChanged && guidanceStatus == 0 && steerSwitch == 0 && previous == 1)
-      {
-        steerSwitch = 1;
-        previous = 0;
-      }
+        if (currentState == 1)
+        {
+            currentState = 0;
+            steerSwitch = 0;
+        }
+        else
+        {
+            currentState = 1;
+            steerSwitch = 1;
+        }
     }
+    previous = reading;
 
+    // Encoder sensor?
     if (steerConfig.ShaftEncoder && pulseCount >= steerConfig.PulseCountMax)
     {
       steerSwitch = 1; // reset values like it turned off
@@ -370,14 +372,6 @@ void autosteerLoop()
     switchByte |= (remoteSwitch << 2); //put remote in bit 2
     switchByte |= (steerSwitch << 1);   //put steerswitch status in bit 1 position
     switchByte |= workSwitch;
-
-    /*
-      #if Relay_Type == 1
-        SetRelays();       //turn on off section relays
-      #elif Relay_Type == 2
-        SetuTurnRelays();  //turn on off uTurn relays
-      #endif
-    */
 
     //get steering position
     if (steerConfig.SingleInputWAS)   //Single Input ADS
