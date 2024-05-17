@@ -286,17 +286,22 @@ void autosteerLoop()
 
     //read all the switches
     workSwitch = digitalRead(WORKSW_PIN);       // read work switch
-/*
-    if (steerConfig.SteerSwitch == 1)         //steer switch on - off
-    {
-      steerSwitch = digitalRead(STEERSW_PIN); //read auto steer enable switch open = 0n closed = Off
-    }
-*/
 
     //Engage steering via 1 PCB Button or 2 Tablet
 
     // 1 PCB Button pressed?
     reading = digitalRead(STEERSW_PIN);
+
+    if (steerConfig.SteerSwitch == 1)
+    {
+        // Switch is off so reset ready for next switch on
+        if (reading == HIGH)
+        {
+            currentState = 1;
+            steerSwitch = 1;
+            previous = reading;
+        }
+    }
 
     // 2 Has tablet button been pressed?
     if (guidanceStatusChanged)
@@ -332,7 +337,7 @@ void autosteerLoop()
     // Encoder sensor?
     if (steerConfig.ShaftEncoder && pulseCount >= steerConfig.PulseCountMax)
     {
-      steerSwitch = 1; // reset values like it turned off
+      steerSwitch = 1; 
       currentState = 1;
       previous = 0;
     }
@@ -345,7 +350,7 @@ void autosteerLoop()
       sensorReading = sensorReading * 0.6 + sensorSample * 0.4;
       if (sensorReading >= steerConfig.PulseCountMax)
       {
-          steerSwitch = 1; // reset values like it turned off
+          steerSwitch = 1; 
           currentState = 1;
           previous = 0;
       }
@@ -361,15 +366,15 @@ void autosteerLoop()
 
       if (sensorReading >= steerConfig.PulseCountMax)
       {
-          steerSwitch = 1; // reset values like it turned off
+          steerSwitch = 1; 
           currentState = 1;
           previous = 0;
       }
     }
 
-    remoteSwitch = digitalRead(REMOTE_PIN); //read auto steer enable switch open = 0n closed = Off
+    remoteSwitch = digitalRead(REMOTE_PIN);
     switchByte = 0;
-    switchByte |= (remoteSwitch << 2); //put remote in bit 2
+    switchByte |= (remoteSwitch << 2);  //put remote in bit 2
     switchByte |= (steerSwitch << 1);   //put steerswitch status in bit 1 position
     switchByte |= workSwitch;
 
