@@ -74,6 +74,9 @@ uint32_t READ_BNO_TIME = 0;   //Used stop BNO data pile up (This version is with
 #define GPSGREEN_LED 10           //Green (Flashing = Dual bad, ON = Dual good)
 #define AUTOSTEER_STANDBY_LED 11  //Red
 #define AUTOSTEER_ACTIVE_LED 12   //Green
+#define HARNESS_A12 26
+#define HARNESS_A13 27
+#define HARNESS_A14 38
 uint32_t gpsReadyTime = 0;        //Used for GGA timeout
 
 //for v2.2
@@ -232,6 +235,14 @@ void setup()
   pinMode(GPSGREEN_LED, OUTPUT);
   pinMode(AUTOSTEER_STANDBY_LED, OUTPUT);
   pinMode(AUTOSTEER_ACTIVE_LED, OUTPUT);
+
+  pinMode(HARNESS_A12, OUTPUT);
+  pinMode(HARNESS_A13 OUTPUT);
+  pinMode(HARNESS_A14, OUTPUT);
+  
+  digitalWrite(HARNESS_A12, 0);
+  digitalWrite(HARNESS_A13, 0);
+  digitalWrite(HARNESS_A14, 0);
 
   // the dash means wildcard
   parser.setErrorHandler(errorHandler);

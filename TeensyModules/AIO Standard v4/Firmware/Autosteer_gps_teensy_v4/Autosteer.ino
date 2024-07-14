@@ -247,6 +247,7 @@ void autosteerSetup()
     Serial.println("Autosteer running, waiting for AgOpenGPS");
     // Autosteer Led goes Red if ADS1115 is found
     digitalWrite(AUTOSTEER_ACTIVE_LED, 0);
+    digitalWrite(HARNESS_A12, 0);
     digitalWrite(AUTOSTEER_STANDBY_LED, 1);
   }
   else
@@ -439,6 +440,7 @@ void autosteerLoop()
       // Autosteer Led goes GREEN if autosteering
 
       digitalWrite(AUTOSTEER_ACTIVE_LED, 1);
+      digitalWrite(HARNESS_A12, 1);
       digitalWrite(AUTOSTEER_STANDBY_LED, 0);
     }
     else
@@ -464,6 +466,7 @@ void autosteerLoop()
       // Autosteer Led goes back to RED when autosteering is stopped
       digitalWrite (AUTOSTEER_STANDBY_LED, 1);
       digitalWrite (AUTOSTEER_ACTIVE_LED, 0);
+      digitalWrite (HARNESS_A12, 0);
     }
   } //end of timed loop
 
